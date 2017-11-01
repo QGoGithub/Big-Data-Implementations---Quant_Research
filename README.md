@@ -1,4 +1,4 @@
-# Big-Data-Implementations Quantitative Research
+# Big Data Implementations ----- Quantitative Research
 
 - Systematic Approach to Quant Research through the application of Big Data
     -Data Wrangling - Sorting, Cleaning, Visualisation

@@ -1,0 +1,58 @@
+A USEFUL NOTE ON PCA AND BIG DATA SETS
+
+Dimensionality reduction is used when we have many covariated dimensions and want to reduce problem size by rotating data points
+into new orthogonal basis and taking only axes with largest variance. 
+
+With less than 10 variables (columns) the data space is already low-dimensional, 
+reducing number of variables further is unlikely to solve technical issues with memory size, 
+but may affect dataset quality a lot. 
+
+In these cases try "online learning" - which can be summarized as:
+instead of working with the whole dataset, these methods take a little part of them (often referred to as "mini-batches") at a time and
+build a model incrementally. 
+
+But what if you really wanted to apply dimensionality reduction technique like PCA to a dataset that doesn't fit into a memory? 
+Normally a dataset is represented as a data matrix X of size n x m, where n is number of observations (rows) and
+m is a number of variables (columns). Typically problems with memory come from only one of these two numbers.
+
+CASE 1: 	Many OBSERVATIONS (n >> m)
+
+When you have too many observations, but the number of variables is from small to moderate, y
+ou can build the covariance matrix incrementally. Indeed, typical PCA consists of constructing a covariance matrix 
+of size m x m and applying singular value decomposition to it. With m=1000 variables of type float64, 
+a covariance matrix has size 1000*1000*8 ~ 8Mb, which easily fits into memory and may be used with SVD.*** 
+So you need only to build the covariance matrix without loading entire dataset into memory - pretty tractable task.
+
+
+Alternatively, you can select a small representative sample from your dataset and approximate the covariance matrix. 
+This matrix will have all the same properties as normal, just a little bit less accurate.
+
+CASE 2:		Many VARIABLES (n << m)
+
+On another hand, sometimes, when you have too many variables, the covariance matrix itself will not fit into memory. 
+E.g. if you work with 640x480 images, every observation has 640*480=307200 variables, which results in a 703Gb covariance matrix! 
+
+That's definitely not what you would like to keep in memory of your computer, or even in memory of your cluster. 
+So we need to reduce dimensions without building a covariance matrix at all.
+
+A popular method for doing it is Random Projection. 
+In short, if you have dataset X of size n x m, you can multiply it by some sparse random matrix R of 
+size m x k (with k << m) and obtain new matrix X' of a much smaller size n x k with approximately the same 
+properties as the original one. Why does it work? Well, you should know that PCA aims to find set of 
+orthogonal axes (principal components) and project your data onto first k of them. 
+It turns out that sparse random vectors are nearly orthogonal and thus may also be used as a new basis.
+
+And, of course, you don't have to multiply the whole dataset X by R - you can translate every 
+observation x into the new basis separately or in mini-batches.
+
+There's also somewhat similar algorithm that would be useful - Random SVD. 
+
+Here's a short check list for dimensionality reduction of big datasets:
+
+If you have not that many dimensions (variables), simply use online learning algorithms.
+If there are many observations, but a moderate number of variables (covariance matrix fits into memory), construct the matrix incrementally and use normal SVD.
+If number of variables is too high, use incremental algorithms.
+
+***SVD - In linear algebra, the singular-value decomposition (SVD) is a factorization of a real or complex matrix. 
+It is the generalization of the eigendecomposition of a positive semidefinite normal matrix (for example, 
+a symmetric matrix with positive eigenvalues) to any matrix via an extension of the polar decomposition.
